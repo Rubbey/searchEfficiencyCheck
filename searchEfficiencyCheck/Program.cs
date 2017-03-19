@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace searchEfficiencyCheck
+namespace ConsoleApplication1
 {
     class Program
     {
-        
+
         static ulong counter;
         static int lookingForNumber;
         static bool test;
@@ -18,37 +18,39 @@ namespace searchEfficiencyCheck
         static void Main(string[] args)
         {
 
-            
-            int iterationCounter = 10;
-            int iterationCounter2 = 28;
 
-            int[] tablica = new int[(int)Math.Pow(2, 28)];
-
-            for (int i = 0; i < tablica.Length; i++)
-            {
-                tablica[i] = i;
-            }
+            int iterationCounter = 28;
 
 
             //1
             Console.WriteLine("\nWyszukiwanie liniowe [ocena przy użyciu instrumentacji]\n");
-            lookingForNumber = (tablica.Length - 1) / iterationCounter;
-            ulong averagaCounter = 0;
             Console.WriteLine("TRY\tSTEPS\t\tNUMBER\t\tFOUND?");
-            for (int i = 0; i < iterationCounter; i++)
+
+            ulong averagaCounter = 0;
+
+
+
+            for (int i = 0; i <= iterationCounter; i++)
             {
+                int[] tablica1 = new int[(int)Math.Pow(2, i)];
+                for (int j = 0; j < tablica1.Length; j++)
+                {
+                    tablica1[j] = j;
+                }
+
                 counter = 0;
-                test = IsPresent_InstrumentalLineSearch(tablica, lookingForNumber);
+                lookingForNumber = tablica1.Max();
+                test = IsPresent_InstrumentalLineSearch(tablica1, lookingForNumber);
                 Console.WriteLine("{0}\t{1,-10}\t{2,-10}\t{3}", i + 1, counter, lookingForNumber, test);
-                if (i == iterationCounter - 2) lookingForNumber = tablica.Length - 1;
-                else lookingForNumber += (tablica.Length-1) / iterationCounter;
+                //if (i == iterationCounter - 2) lookingForNumber = tablica.Length - 1;
+                //else lookingForNumber += (tablica.Length - 1) / iterationCounter;
                 averagaCounter += counter;
             }
 
-            Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.",(double)averagaCounter/iterationCounter);
+            Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.", (double)averagaCounter / iterationCounter);
             Console.WriteLine("---------------------------------------------\n");
 
-
+            /*
             //2
             Console.WriteLine("\nWyszukiwanie liniowe [ocena przy wykorzystaniu pomiaru czasu wykonania]\n");
             lookingForNumber = (tablica.Length - 1) / iterationCounter;
@@ -80,28 +82,36 @@ namespace searchEfficiencyCheck
 
             Console.WriteLine("\nŚrednia złożoność wynosi: {0}[ms]", averagaCounter2 / iterationCounter);
             Console.WriteLine("---------------------------------------------\n");
-
-
+            */
 
             //3
             Console.WriteLine("\nWyszukiwanie binarne [ocena przy użyciu instrumentacji]\n");
-            lookingForNumber = (tablica.Length - 1) / 2;
-            ulong averagaCounter3 = 0;
+            
+            ulong averageCounter3 = 0;
             Console.WriteLine("TRY\tSTEPS\t\tNUMBER\t\tFOUND?");
-
-            for (int i = 0; i < iterationCounter2; i++)
+            counter = 0;
+            for (int i = 0; i < iterationCounter; i++)
             {
-                counter = 0;
-                test = IsPresent_InstrumentalBinaryTreeSearch2(tablica, lookingForNumber);
+                int[] tablica2 = new int[(int)Math.Pow(2, i)];
+                for (int j = 0; j < tablica2.Length; j++)
+                {
+                    tablica2[j] = j;
+                }
+
+                lookingForNumber = tablica2.Max();
+                test = IsPresent_InstrumentalBinaryTreeSearch2(tablica2, lookingForNumber);
                 Console.WriteLine("{0}\t{1}\t\t{2,-10}\t{3}", i + 1, counter, lookingForNumber, test);
-                lookingForNumber = lookingForNumber / 2;
-                averagaCounter3 += counter;
+
+                averageCounter3 += counter;
             }
 
-            Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.", (double)averagaCounter3 / iterationCounter2);
+            Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.", (double)averageCounter3 / iterationCounter);
             Console.WriteLine("---------------------------------------------\n");
 
 
+            /*
+
+            
 
             //4
             Console.WriteLine("\nWyszukiwanie binarne [ocena przy wykorzystaniu pomiaru czasu wykonania]\n");
@@ -134,7 +144,7 @@ namespace searchEfficiencyCheck
             Console.WriteLine("\nŚrednia złożoność wynosi: {0}[µs]", (double)averagaCounter4 / iterationCounter2);
             Console.WriteLine("---------------------------------------------\n");
 
-
+            */
             Console.ReadLine();
 
         }
@@ -163,26 +173,26 @@ namespace searchEfficiencyCheck
             return false;
         }
 
-        
+
 
         static bool IsPresent_InstrumentalBinaryTreeSearch2(int[] vector, int number)
         {
-            int left = 0, right = vector.Length - 1, mid = (left + right) / 2;
+            int leftSide = 0, rightSide = vector.Length, middle = (leftSide + rightSide) / 2;
 
             do
             {
                 counter++;
-                mid = (left + right) / 2;
-                if (vector[mid] == number) return true;
-                else if (vector[mid] < number) left = mid + 1;
-                else right = mid;
+                middle = (leftSide + rightSide) / 2;
+                if (vector[middle] == number) return true;
+                else if (vector[middle] < number) leftSide = middle + 1;
+                else rightSide = middle;
             }
-            while (left != right);
+            while (leftSide != rightSide);
 
             return false;
         }
 
-        
+
 
         static bool IsPresent_TimeStampBinaryTreeSearch2(int[] vector, int number)
         {
@@ -202,5 +212,3 @@ namespace searchEfficiencyCheck
 
     }
 }
-
-
