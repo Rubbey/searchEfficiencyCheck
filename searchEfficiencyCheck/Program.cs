@@ -89,20 +89,22 @@ namespace ConsoleApplication1
             
             ulong averageCounter3 = 0;
             Console.WriteLine("TRY\tSTEPS\t\tNUMBER\t\tFOUND?");
-            counter = 0;
+            
             for (int i = 0; i < iterationCounter; i++)
             {
+                counter = 0;
+
                 int[] tablica2 = new int[(int)Math.Pow(2, i)];
-                for (int j = 0; j < tablica2.Length; j++)
+                for (int j = 1; j <= tablica2.Length; j++)
                 {
                     tablica2[j] = j;
                 }
 
-                lookingForNumber = tablica2.Max();
+                lookingForNumber = tablica2.Length;
                 test = IsPresent_InstrumentalBinaryTreeSearch2(tablica2, lookingForNumber);
-                Console.WriteLine("{0}\t{1}\t\t{2,-10}\t{3}", i + 1, counter, lookingForNumber, test);
+                Console.WriteLine("{0}\t{1}\t\t{2,-10}\t{3}", i , counter, lookingForNumber, test);
 
-                averageCounter3 += counter;
+                averageCounter3 += counter / (ulong)lookingForNumber;
             }
 
             Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.", (double)averageCounter3 / iterationCounter);
@@ -178,10 +180,14 @@ namespace ConsoleApplication1
         static bool IsPresent_InstrumentalBinaryTreeSearch2(int[] vector, int number)
         {
             int leftSide = 0, rightSide = vector.Length, middle = (leftSide + rightSide) / 2;
+            ulong treeLevel = 1, wykładnik = 0;
 
             do
             {
-                counter++;
+                counter += (ulong)Math.Pow(2, wykładnik) * treeLevel;
+                wykładnik++;
+                treeLevel++;
+
                 middle = (leftSide + rightSide) / 2;
                 if (vector[middle] == number) return true;
                 else if (vector[middle] < number) leftSide = middle + 1;
