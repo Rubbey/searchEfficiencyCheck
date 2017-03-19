@@ -11,17 +11,15 @@ namespace searchEfficiencyCheck
     {
         
         static ulong counter;
-        static int half;
         static int lookingForNumber;
-        static int precisionFactor = 10000;
+        static bool test;
+        const int precisionFactor = 100;
 
         static void Main(string[] args)
         {
 
-            long programStartingTime = Stopwatch.GetTimestamp();
-
-
-            int iterationCounter = 28;
+            
+            int iterationCounter = 10;
             int iterationCounter2 = 28;
 
             int[] tablica = new int[(int)Math.Pow(2, 28)];
@@ -33,21 +31,29 @@ namespace searchEfficiencyCheck
 
 
             //1
+            Console.WriteLine("\nWyszukiwanie liniowe [ocena przy użyciu instrumentacji]\n");
             lookingForNumber = (tablica.Length - 1) / iterationCounter;
+            ulong averagaCounter = 0;
             Console.WriteLine("TRY\tSTEPS\t\tNUMBER\t\tFOUND?");
             for (int i = 0; i < iterationCounter; i++)
             {
                 counter = 0;
-                bool test = IsPresent_InstrumentalLineSearch(tablica, lookingForNumber);
+                test = IsPresent_InstrumentalLineSearch(tablica, lookingForNumber);
                 Console.WriteLine("{0}\t{1,-10}\t{2,-10}\t{3}", i + 1, counter, lookingForNumber, test);
-                lookingForNumber += (tablica.Length-1) / iterationCounter;
+                if (i == iterationCounter - 2) lookingForNumber = tablica.Length - 1;
+                else lookingForNumber += (tablica.Length-1) / iterationCounter;
+                averagaCounter += counter;
             }
-            Console.WriteLine("\n---===#########===---\n");
+
+            Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.",(double)averagaCounter/iterationCounter);
+            Console.WriteLine("---------------------------------------------\n");
 
 
             //2
+            Console.WriteLine("\nWyszukiwanie liniowe [ocena przy wykorzystaniu pomiaru czasu wykonania]\n");
             lookingForNumber = (tablica.Length - 1) / iterationCounter;
-            Console.WriteLine("TRY\tTIME[s]\t\tNUMBER");
+            double averagaCounter2 = 0;
+            Console.WriteLine("TRY\tTIME[ms]\tNUMBER\t\tFOUND?");
 
             for (int i = 0; i < iterationCounter; i++)
             {
@@ -56,42 +62,52 @@ namespace searchEfficiencyCheck
                 for (int n = 0; n < (iterationCounter + 1 + 1); ++n) // odejmujemy wartości skrajne
                 {
                     long StartingTime = Stopwatch.GetTimestamp();
-                    IsPresent_TimeStampLineSearch(tablica, lookingForNumber);
+                    test = IsPresent_TimeStampLineSearch(tablica, lookingForNumber);
                     long EndingTime = Stopwatch.GetTimestamp();
                     IterationElapsedTime = EndingTime - StartingTime;
                     ElapsedTime += IterationElapsedTime;
-                    Console.Write("{0}: [{1:P2}]\r", i + 1, (float)n / (iterationCounter + 1));  //wskaźnik postępu
+                    Console.Write("{0}: [{1:P0}]\r", i + 1, (float)n / (iterationCounter + 1));  //wskaźnik postępu
                     if (IterationElapsedTime < MinTime) MinTime = IterationElapsedTime;
                     if (IterationElapsedTime > MaxTime) MaxTime = IterationElapsedTime;
                 }
                 ElapsedTime -= (MinTime + MaxTime);
-                ElapsedSeconds = ElapsedTime * (1.0 / (iterationCounter * Stopwatch.Frequency));
-                Console.WriteLine("{0}\t{1}\t\t{2}", i + 1, ElapsedSeconds.ToString("F4"), lookingForNumber);
-                lookingForNumber += tablica.Max() / iterationCounter;
+                ElapsedSeconds = ElapsedTime * (1000.0 / (iterationCounter * Stopwatch.Frequency));
+                Console.WriteLine("{0}\t{1,-10}\t{2}\t{3}", i + 1, ElapsedSeconds.ToString("F4"), lookingForNumber, test);
+                if (i == iterationCounter - 2) lookingForNumber = tablica.Length - 1;
+                else lookingForNumber += (tablica.Length - 1) / iterationCounter;
+                averagaCounter2 += ElapsedSeconds;
             }
 
-            Console.WriteLine("\n---===#########===---\n");
+            Console.WriteLine("\nŚrednia złożoność wynosi: {0}[ms]", averagaCounter2 / iterationCounter);
+            Console.WriteLine("---------------------------------------------\n");
 
 
 
             //3
+            Console.WriteLine("\nWyszukiwanie binarne [ocena przy użyciu instrumentacji]\n");
             lookingForNumber = (tablica.Length - 1) / 2;
-            Console.WriteLine("TRY\tSTEPS\t\tNUMBER");
+            ulong averagaCounter3 = 0;
+            Console.WriteLine("TRY\tSTEPS\t\tNUMBER\t\tFOUND?");
 
             for (int i = 0; i < iterationCounter2; i++)
             {
                 counter = 0;
-                IsPresent_InstrumentalBinaryTreeSearch2(tablica, lookingForNumber);
-                Console.WriteLine("{0}\t{1}\t\t{2}", i + 1, counter, lookingForNumber);
-                //lookingForNumber += (tablica.Length - lookingForNumber) / 2;
+                test = IsPresent_InstrumentalBinaryTreeSearch2(tablica, lookingForNumber);
+                Console.WriteLine("{0}\t{1}\t\t{2,-10}\t{3}", i + 1, counter, lookingForNumber, test);
                 lookingForNumber = lookingForNumber / 2;
+                averagaCounter3 += counter;
             }
-            Console.WriteLine("\n---===#########===---\n");
+
+            Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.", (double)averagaCounter3 / iterationCounter2);
+            Console.WriteLine("---------------------------------------------\n");
+
 
 
             //4
+            Console.WriteLine("\nWyszukiwanie binarne [ocena przy wykorzystaniu pomiaru czasu wykonania]\n");
             lookingForNumber = (tablica.Length - 1) / 2;
-            Console.WriteLine("TRY\tTIME[s]\t\tNUMBER");
+            double averagaCounter4 = 0;
+            Console.WriteLine("TRY\tTIME[µs]\tNUMBER\t\tFOUND?");
 
             for (int i = 0; i < iterationCounter2; i++)
             {
@@ -100,28 +116,25 @@ namespace searchEfficiencyCheck
                 for (int n = 0; n < (iterationCounter2 * precisionFactor + 1 + 1); ++n) // odejmujemy wartości skrajne
                 {
                     long StartingTime2 = Stopwatch.GetTimestamp();
-                    IsPresent_TimeStampBinaryTreeSearch2(tablica, lookingForNumber);
+                    test = IsPresent_TimeStampBinaryTreeSearch2(tablica, lookingForNumber);
                     long EndingTime2 = Stopwatch.GetTimestamp();
                     IterationElapsedTime2 = EndingTime2 - StartingTime2;
                     ElapsedTime2 += IterationElapsedTime2;
-                    Console.Write("{0}: [{1:P2}]\r", i + 1, (float)n / (iterationCounter2 * precisionFactor + 1));  //wskaźnik postępu                  
+                    Console.Write("{0}: [{1:P0}]\r", i + 1, (float)n / (iterationCounter2 * precisionFactor + 1));  //wskaźnik postępu                  
                     if (IterationElapsedTime2 < MinTime2) MinTime2 = IterationElapsedTime2;
                     if (IterationElapsedTime2 > MaxTime2) MaxTime2 = IterationElapsedTime2;
                 }
                 ElapsedTime2 -= (MinTime2 + MaxTime2);
-                ElapsedSeconds2 = ElapsedTime2 * (1.0 / (precisionFactor * iterationCounter2 * Stopwatch.Frequency));
-                Console.WriteLine("{0}:\t{1}\t{2}", i + 1, ElapsedSeconds2.ToString("F8"), lookingForNumber);
-                //lookingForNumber += (tablica.Length - lookingForNumber) / 2;
+                ElapsedSeconds2 = ElapsedTime2 * (1000000.0 / (precisionFactor * iterationCounter2 * Stopwatch.Frequency));
+                Console.WriteLine("{0}:\t{1}\t{2,-10}\t{3}", i + 1, ElapsedSeconds2.ToString("F8"), lookingForNumber, test);
                 lookingForNumber = lookingForNumber / 2;
+                averagaCounter4 += ElapsedSeconds2;
             }
 
-            Console.WriteLine("\n---===#########===---\n");
+            Console.WriteLine("\nŚrednia złożoność wynosi: {0}[µs]", (double)averagaCounter4 / iterationCounter2);
+            Console.WriteLine("---------------------------------------------\n");
 
 
-            long programEndingTime = Stopwatch.GetTimestamp();
-            double programTime = (programEndingTime - programStartingTime) * (1.0 / Stopwatch.Frequency);
-
-            Console.WriteLine("Full time: {0}\nCPU startTimeStamp: {1}\nCPU stopTimeStamp: {2}", programTime, programStartingTime, programEndingTime);
             Console.ReadLine();
 
         }
@@ -150,18 +163,7 @@ namespace searchEfficiencyCheck
             return false;
         }
 
-        static bool IsPresent_InstrumentalBinaryTreeSearch(int[] vector, int number)
-        {
-            half = vector.Length / 2;
-            while (half >= 0)
-            {
-                counter++;
-                if (vector[half] == number) return true;
-                else if (number > half) half += half / 2;
-                else half = half / 2;
-            }
-            return false;
-        }
+        
 
         static bool IsPresent_InstrumentalBinaryTreeSearch2(int[] vector, int number)
         {
@@ -177,21 +179,10 @@ namespace searchEfficiencyCheck
             }
             while (left != right);
 
-            Console.WriteLine("W przeszukiwanym zbiorze nie ma liczby: " + number);
             return false;
         }
 
-        static bool IsPresent_TimeStampBinaryTreeSearch(int[] vector, int number)
-        {
-            half = vector.Length / 2;
-            while (half >= 0)
-            {
-                if (vector[half] == number) return true;
-                else if (number > half) half += half / 2;
-                else half = half / 2;
-            }
-            return false;
-        }
+        
 
         static bool IsPresent_TimeStampBinaryTreeSearch2(int[] vector, int number)
         {
@@ -206,11 +197,10 @@ namespace searchEfficiencyCheck
             }
             while (left != right);
 
-            Console.WriteLine("W przeszukiwanym zbiorze nie ma liczby: " + number);
             return false;
         }
 
     }
 }
 
-//xxxxx
+
