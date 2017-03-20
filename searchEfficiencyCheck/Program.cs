@@ -10,9 +10,7 @@ namespace ConsoleApplication1
     class Program
     {
 
-        static ulong counter;
-        static int lookingForNumber;
-        static bool test;
+        static ulong counter, maxSteps;
         const int precisionFactor = 100;
 
         static void Main(string[] args)
@@ -24,30 +22,20 @@ namespace ConsoleApplication1
 
             //1
             Console.WriteLine("\nWyszukiwanie liniowe [ocena przy użyciu instrumentacji]\n");
-            Console.WriteLine("TRY\tSTEPS\t\tNUMBER\t\tFOUND?");
-
-            ulong averagaCounter = 0;
-
-
-
+            Console.WriteLine("TAB_SIZE:\tLOOKING_FOR:\tFOUND?\tMAX_STEPS:\tAVG_STEPS:");
+                        
             for (int i = 0; i <= iterationCounter; i++)
             {
-                int[] tablica1 = new int[(int)Math.Pow(2, i)];
-                for (int j = 0; j < tablica1.Length; j++)
-                {
-                    tablica1[j] = j;
-                }
-
+                int[] tablica = new int[(int)Math.Pow(2,i)];
+                for (int j = 0; j < tablica.Length; j++) tablica[j] = j;
+                
                 counter = 0;
-                lookingForNumber = tablica1.Max();
-                test = IsPresent_InstrumentalLineSearch(tablica1, lookingForNumber);
-                Console.WriteLine("{0}\t{1,-10}\t{2,-10}\t{3}", i + 1, counter, lookingForNumber, test);
-                //if (i == iterationCounter - 2) lookingForNumber = tablica.Length - 1;
-                //else lookingForNumber += (tablica.Length - 1) / iterationCounter;
-                averagaCounter += counter;
+                int lookingForNumber = tablica.Length - 1;
+                bool test = InstrumentalLineSearch(tablica, lookingForNumber);
+                
+                Console.WriteLine("Tab[2^{0}]\t{1,-11}\t{2}\t{3,-10}\t{4,-11}", i, lookingForNumber, test, counter, (double)(1 + tablica.Length)/2);                           
             }
-
-            Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.", (double)averagaCounter / iterationCounter);
+            
             Console.WriteLine("---------------------------------------------\n");
 
             /*
@@ -85,29 +73,21 @@ namespace ConsoleApplication1
             */
 
             //3
-            Console.WriteLine("\nWyszukiwanie binarne [ocena przy użyciu instrumentacji]\n");
-            
-            ulong averageCounter3 = 0;
-            Console.WriteLine("TRY\tSTEPS\t\tNUMBER\t\tFOUND?");
-            
-            for (int i = 0; i < iterationCounter; i++)
+            Console.WriteLine("\nWyszukiwanie binarne [ocena przy użyciu instrumentacji]\n");            
+            Console.WriteLine("TAB_SIZE:\tLOOKING_FOR:\tFOUND?\tMAX_STEPS:\tAVG_STEPS:");
+
+            for (int i = 0; i <= iterationCounter; i++)
             {
+                int[] tablica = new int[(int)Math.Pow(2, i)];
+                for (int j = 0; j < tablica.Length; j++) tablica[j] = j;
+
                 counter = 0;
+                int lookingForNumber = tablica.Length;
+                bool test = InstrumentalBinaryTreeSearch(tablica, lookingForNumber);
 
-                int[] tablica2 = new int[(int)Math.Pow(2, i)];
-                for (int j = 1; j <= tablica2.Length; j++)
-                {
-                    tablica2[j] = j;
-                }
-
-                lookingForNumber = tablica2.Length;
-                test = IsPresent_InstrumentalBinaryTreeSearch2(tablica2, lookingForNumber);
-                Console.WriteLine("{0}\t{1}\t\t{2,-10}\t{3}", i , counter, lookingForNumber, test);
-
-                averageCounter3 += counter / (ulong)lookingForNumber;
+                Console.WriteLine("Tab[2^{0}]\t{1,-11}\t{2}\t{3,-10}\t{4,-11}", i, lookingForNumber, test, maxSteps, (double)counter / tablica.Length);
             }
-
-            Console.WriteLine("\nŚrednia złożoność wynosi: {0} kroków.", (double)averageCounter3 / iterationCounter);
+                       
             Console.WriteLine("---------------------------------------------\n");
 
 
@@ -156,7 +136,7 @@ namespace ConsoleApplication1
 
 
 
-        static bool IsPresent_InstrumentalLineSearch(int[] vector, int number)
+        static bool InstrumentalLineSearch(int[] vector, int number)
         {
             for (int i = 0; i < vector.Length; i++)
             {
@@ -177,24 +157,28 @@ namespace ConsoleApplication1
 
 
 
-        static bool IsPresent_InstrumentalBinaryTreeSearch2(int[] vector, int number)
+        static bool InstrumentalBinaryTreeSearch(int[] vector, int number)
         {
-            int leftSide = 0, rightSide = vector.Length, middle = (leftSide + rightSide) / 2;
-            ulong treeLevel = 1, wykładnik = 0;
+            int leftSide = 0, rightSide = vector.Length - 1, middle;
+            ulong treeLevel = 1, wykladnik = 0;
 
-            do
+            while (leftSide <= rightSide)
             {
-                counter += (ulong)Math.Pow(2, wykładnik) * treeLevel;
-                wykładnik++;
-                treeLevel++;
-
                 middle = (leftSide + rightSide) / 2;
-                if (vector[middle] == number) return true;
-                else if (vector[middle] < number) leftSide = middle + 1;
-                else rightSide = middle;
-            }
-            while (leftSide != rightSide);
+                if (number == vector[middle])
+                {
+                    counter += treeLevel;
+                    maxSteps = treeLevel;
+                    return true;
+                }
+                else if (number < vector[middle]) rightSide = middle - 1;
+                else leftSide = middle + 1;
 
+                counter += treeLevel * (ulong)Math.Pow(2, wykladnik);
+                wykladnik++;
+                treeLevel++;                                 
+            }
+            maxSteps = treeLevel;
             return false;
         }
 
